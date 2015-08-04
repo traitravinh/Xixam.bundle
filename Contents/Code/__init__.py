@@ -18,6 +18,9 @@ NEXT_ICO = 'icon-next.png'
 def Start():
     ObjectContainer.title1 = NAME
     HTTP.CacheTime = CACHE_1HOUR
+
+    DirectoryObject.thumb = R(DEFAULT_ICO)
+
     HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0'
     HTTP.Headers['X-Requested-With'] = 'XMLHttpRequest'
 ####################################################################################################
@@ -27,8 +30,7 @@ def MainMenu():
     oc = ObjectContainer()
     oc.add(InputDirectoryObject(
         key=Callback(Search),
-        title='[COLOR ffff6347]SEARCH[/COLOR]',
-        thumb=R(SEARCH_ICO)
+        title='SEARCH'
     ))
     try:
         link = HTTP.Request(BASE_URL,cacheTime=3600).content
@@ -60,7 +62,7 @@ def Search(query=None):
 @route('/video/xixam/category')
 def Category(title, catelink):
     oc = ObjectContainer(title2=title)
-    link = urllib2.urlopen(catelink).read()
+    link = HTTP.Request(catelink,cacheTime=3600).content
     soup = BeautifulSoup(link.decode('utf-8'))
 
     div_block = soup('div',{'class':'BlockProduct2 '})#space after BlockProduct2
@@ -94,7 +96,7 @@ def Category(title, catelink):
 @route('/video/xixam/server')
 def Server(title, svlink, svthumb, inum):
     oc = ObjectContainer(title2=title)
-    link = urllib2.urlopen(overview(svlink)).read()
+    link = HTTP.Request(overview(svlink),cacheTime=3600).content
     soup = BeautifulSoup(link)
     div_serverlist = soup('div',{'class':'serverlist'})
     if inum is None:
@@ -125,7 +127,7 @@ def Server(title, svlink, svthumb, inum):
     return oc
 
 @route('/video/xixam/createMediaObject')
-def createMediaObject(url, title,thumb,rating_key,include_container=False):
+def createMediaObject(url, title,thumb,rating_key,include_container=False,includeRelatedCount=None,includeRelated=None,includeExtras=None):
     container = Container.MP4
     video_codec = VideoCodec.H264
     audio_codec = AudioCodec.AAC
@@ -180,14 +182,14 @@ def PlayVideo(url):
 
 
 def overview(url):
-    link = urllib2.urlopen(url).read()
+    link = HTTP.Request(url,cacheTime=3600).content
     soup = BeautifulSoup(link)
     div_overview = soup('div',{'class':'overview'})
     p_style_10px = BeautifulSoup(str(div_overview[0]))('p',{'style':'padding-top:10px'})
     return M_BASE_URL+BeautifulSoup(str(p_style_10px[0]))('a')[0]['href']
 
 def videolinks(url):
-    link = urllib2.urlopen(url).read()
+    link = HTTP.Request(url,cacheTime=3600).content
     soup = BeautifulSoup(link)
     if link.find('http://www.youtube.com/embed/')!=-1:
         video = soup('iframe')[1]['src']
